@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AcademicWrite Trainer — 学术写作逻辑训练</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0f0a2e;--card:rgba(30,27,75,0.6);--border:rgba(139,92,246,0.2);--accent:#8b5cf6;--accent2:#6366f1;--text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;--green:#10b981;--red:#ef4444;--amber:#fbbf24;--blue:#60a5fa}
+body{font-family:'Segoe UI','Microsoft YaHei',sans-serif;background:linear-gradient(135deg,#0f0a2e 0%,#1e1b4b 50%,#2e1065 100%);min-height:100vh;padding:16px;color:var(--text)}
+.container{max-width:1320px;margin:0 auto}
+header{text-align:center;margin-bottom:20px}
+header h1{font-size:28px;background:linear-gradient(90deg,#a78bfa,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px}
+header .subtitle{color:var(--text2);font-size:13px}
+header .subtitle a{color:#a78bfa;text-decoration:none}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:16px;backdrop-filter:blur(10px)}
+.card h3{font-size:15px;color:#c4b5fd;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.paper-selector{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.paper-chip{padding:8px 16px;border-radius:8px;background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);color:#c4b5fd;cursor:pointer;font-size:13px;transition:all .2s;white-space:nowrap}
+.paper-chip:hover{background:rgba(139,92,246,0.3)}
+.paper-chip.active{background:rgba(139,92,246,0.4);border-color:var(--accent);color:#fff}
+.upload-btn{padding:8px 16px;border-radius:8px;background:rgba(16,185,129,0.15);border:1px dashed rgba(16,185,129,0.4);color:#6ee7b7;cursor:pointer;font-size:13px;transition:all .2s}
+.upload-btn:hover{background:rgba(16,185,129,0.3)}
+.section-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.section-tab{padding:6px 14px;border-radius:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--text2);cursor:pointer;font-size:12px;transition:all .2s;display:flex;align-items:center;gap:5px}
+.section-tab:hover{background:rgba(255,255,255,0.08)}
+.section-tab.active{background:rgba(139,92,246,0.2);border-color:rgba(139,92,246,0.4);color:#c4b5fd}
+.section-tab .sec-count{background:rgba(255,255,255,0.1);padding:1px 6px;border-radius:10px;font-size:10px}
+.section-tab.active .sec-count{background:rgba(139,92,246,0.3)}
+.settings-row{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.setting-group{display:flex;align-items:center;gap:8px}
+.setting-group label{font-size:13px;color:var(--text2)}
+.diff-btn{padding:6px 14px;border-radius:6px;background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);color:#a5b4fc;cursor:pointer;font-size:12px;transition:all .2s}
+.diff-btn:hover{background:rgba(99,102,241,0.3)}
+.diff-btn.active{background:rgba(99,102,241,0.5);border-color:var(--accent2);color:#fff}
+.toggle-label{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text2);cursor:pointer}
+.toggle-label input{accent-color:var(--accent)}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.btn{padding:8px 18px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px}
+.btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,0.3)}
+.btn:active{transform:translateY(0)}
+.btn-check{background:var(--green);color:#fff}
+.btn-undo{background:#475569;color:#fff}
+.btn-reset{background:#d97706;color:#fff}
+.btn-hint{background:var(--accent2);color:#fff}
+.btn-original{background:#7c3aed;color:#fff}
+.btn-report{background:#0891b2;color:#fff}
+.stats-bar{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.stat-item{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text2)}
+.stat-item .val{font-weight:700;font-size:18px}
+.stat-item .val.green{color:var(--green)}
+.stat-item .val.blue{color:var(--blue)}
+.stat-item .val.amber{color:var(--amber)}
+.columns{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.column{background:rgba(30,27,75,0.5);border:1px solid rgba(139,92,246,0.15);border-radius:14px;padding:14px;min-height:300px}
+.column-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid rgba(139,92,246,0.15)}
+.column-header h3{font-size:15px;color:#c4b5fd}
+.count-badge{padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600;background:rgba(139,92,246,0.2);color:#c4b5fd}
+.count-badge.done{background:rgba(16,185,129,0.3);color:#6ee7b7}
+.sentence-list{display:flex;flex-direction:column;gap:6px}
+.sentence-item{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px 14px;cursor:pointer;transition:all .25s;display:flex;align-items:flex-start;gap:10px;user-select:none}
+.sentence-item:hover{background:rgba(255,255,255,0.1);border-color:rgba(139,92,246,0.3);transform:translateY(-1px)}
+.sentence-item .order-num{min-width:26px;height:26px;border-radius:50%;background:rgba(99,102,241,0.2);color:#a5b4fc;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0}
+.sentence-item .label-tag{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;flex-shrink:0;white-space:nowrap;margin-top:2px}
+.sentence-item .text{flex:1;font-size:13px;line-height:1.6;color:#cbd5e1}
+.sentence-item .arrow-icon{color:var(--text3);font-size:14px;flex-shrink:0;margin-top:3px;transition:color .2s}
+.sentence-item:hover .arrow-icon{color:var(--accent)}
+.sentence-item.correct{border-color:rgba(16,185,129,0.4);background:rgba(16,185,129,0.08)}
+.sentence-item.correct .order-num{background:var(--green);color:#fff}
+.sentence-item.wrong{border-color:rgba(239,68,68,0.4);background:rgba(239,68,68,0.08)}
+.sentence-item.wrong .order-num{background:var(--red);color:#fff}
+.sentence-item.hint-highlight{border-color:var(--accent);background:rgba(139,92,246,0.15);animation:hintGlow .8s ease-in-out 2}
+@keyframes hintGlow{0%,100%{box-shadow:none}50%{box-shadow:0 0 0 3px rgba(139,92,246,0.4)}}
+.sentence-item.move-anim{animation:slideIn .3s ease-out}
+@keyframes slideIn{from{opacity:0;transform:translateX(-15px)}to{opacity:1;transform:translateX(0)}}
+.paragraph-card{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 14px;cursor:pointer;transition:all .25s;user-select:none}
+.paragraph-card:hover{background:rgba(255,255,255,0.1);border-color:rgba(139,92,246,0.3);transform:translateY(-1px)}
+.paragraph-card .p-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.paragraph-card .p-num{min-width:26px;height:26px;border-radius:50%;background:rgba(99,102,241,0.2);color:#a5b4fc;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0}
+.paragraph-card .p-label{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600}
+.paragraph-card .p-text{font-size:12px;line-height:1.6;color:var(--text2)}
+.paragraph-card.correct{border-color:rgba(16,185,129,0.4);background:rgba(16,185,129,0.08)}
+.paragraph-card.correct .p-num{background:var(--green);color:#fff}
+.paragraph-card.wrong{border-color:rgba(239,68,68,0.4);background:rgba(239,68,68,0.08)}
+.paragraph-card.wrong .p-num{background:var(--red);color:#fff}
+.paragraph-card.hint-highlight{border-color:var(--accent);background:rgba(139,92,246,0.15);animation:hintGlow .8s ease-in-out 2}
+.paragraph-card.move-anim{animation:slideIn .3s ease-out}
+.section-card{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px;cursor:pointer;transition:all .25s;user-select:none}
+.section-card:hover{background:rgba(255,255,255,0.1);border-color:rgba(139,92,246,0.3);transform:translateY(-1px)}
+.section-card .s-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.section-card .s-num{min-width:28px;height:28px;border-radius:50%;background:rgba(99,102,241,0.2);color:#a5b4fc;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
+.section-card .s-name{font-size:14px;font-weight:600;color:var(--text)}
+.section-card .s-label{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600}
+.section-card .s-text{font-size:12px;line-height:1.55;color:var(--text2);max-height:120px;overflow:hidden;position:relative}
+.section-card .s-text::after{content:'';position:absolute;bottom:0;left:0;right:0;height:30px;background:linear-gradient(transparent,rgba(30,27,75,0.9))}
+.section-card.correct{border-color:rgba(16,185,129,0.4);background:rgba(16,185,129,0.08)}
+.section-card.correct .s-num{background:var(--green);color:#fff}
+.section-card.wrong{border-color:rgba(239,68,68,0.4);background:rgba(239,68,68,0.08)}
+.section-card.wrong .s-num{background:var(--red);color:#fff}
+.section-card.hint-highlight{border-color:var(--accent);background:rgba(139,92,246,0.15);animation:hintGlow .8s ease-in-out 2}
+.section-card.move-anim{animation:slideIn .3s ease-out}
+.empty-hint{text-align:center;color:var(--text3);padding:40px 20px;font-size:13px;line-height:1.8}
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:1000;justify-content:center;align-items:center}
+.modal-overlay.show{display:flex}
+.modal-box{background:#1e1b4b;border:1px solid rgba(139,92,246,0.3);border-radius:16px;padding:24px;max-width:800px;max-height:85vh;overflow-y:auto;width:92%;box-shadow:0 20px 60px rgba(0,0,0,0.5)}
+.modal-box h3{font-size:18px;color:#c4b5fd;margin-bottom:16px}
+.modal-close{margin-top:16px;padding:8px 24px;background:var(--accent2);color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer}
+.orig-item{padding:8px 12px;margin-bottom:4px;border-radius:6px;font-size:13px;line-height:1.65;color:#cbd5e1;display:flex;gap:8px}
+.orig-item:nth-child(odd){background:rgba(255,255,255,0.03)}
+.orig-num{min-width:24px;font-weight:700;color:var(--accent);flex-shrink:0}
+.orig-label{padding:1px 6px;border-radius:3px;font-size:10px;font-weight:600;flex-shrink:0}
+.report-section{margin-bottom:20px}
+.report-section h4{font-size:14px;color:#a5b4fc;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid rgba(139,92,246,0.2)}
+.report-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.report-metric{background:rgba(255,255,255,0.04);border-radius:8px;padding:12px;text-align:center}
+.report-metric .rm-val{font-size:24px;font-weight:700;margin-bottom:4px}
+.report-metric .rm-label{font-size:11px;color:var(--text2)}
+.report-bar{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px;color:var(--text2)}
+.report-bar .rb-fill{height:8px;border-radius:4px;transition:width .5s}
+.report-pattern{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.report-pattern .rp-tag{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600}
+.history-table{width:100%;border-collapse:collapse;font-size:12px}
+.history-table th{text-align:left;padding:8px;color:var(--text2);border-bottom:1px solid rgba(139,92,246,0.2)}
+.history-table td{padding:8px;color:#cbd5e1;border-bottom:1px solid rgba(255,255,255,0.05)}
+.upload-area{border:2px dashed rgba(139,92,246,0.3);border-radius:12px;padding:30px;text-align:center;cursor:pointer;transition:all .2s;color:var(--text2)}
+.upload-area:hover{border-color:var(--accent);background:rgba(139,92,246,0.05)}
+.upload-area.drag-over{border-color:var(--accent);background:rgba(139,92,246,0.1)}
+.upload-area p{margin-bottom:8px;font-size:14px}
+.upload-area .sub{font-size:12px;color:var(--text3)}
+.paste-area{width:100%;min-height:150px;background:rgba(255,255,255,0.04);border:1px solid rgba(139,92,246,0.2);border-radius:8px;padding:12px;color:#cbd5e1;font-size:13px;line-height:1.6;resize:vertical;font-family:inherit}
+.paste-area:focus{outline:none;border-color:var(--accent)}
+.tab-row{display:flex;gap:4px;margin-bottom:16px}
+.tab-btn{padding:6px 16px;border-radius:6px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);color:var(--text2);cursor:pointer;font-size:12px;transition:all .2s}
+.tab-btn:hover{background:rgba(255,255,255,0.08)}
+.tab-btn.active{background:rgba(139,92,246,0.2);border-color:rgba(139,92,246,0.3);color:#c4b5fd}
+.result-banner{display:none;border-radius:12px;padding:16px;margin-bottom:16px;text-align:center}
+.result-banner.show{display:block}
+.result-banner.perfect{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3)}
+.result-banner.partial{background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3)}
+.result-banner h3{font-size:20px;margin-bottom:6px}
+.result-banner p{font-size:13px;color:var(--text2)}
+.section-info{font-size:12px;color:var(--text3);margin-bottom:12px;padding:8px 12px;background:rgba(255,255,255,0.03);border-radius:6px;line-height:1.6}
+.section-info strong{color:#a5b4fc}
+@media(max-width:768px){.columns{grid-template-columns:1fr}.report-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>AcademicWrite Trainer</h1>
+        <p class="subtitle">学术写作逻辑训练 — 拆解顶刊论文，内化论证结构 | <a href="https://github.com/youxuels/academic-write-trainer" target="_blank">GitHub</a></p>
+    </header>
+
+    <div class="card">
+        <h3>📄 论文库</h3>
+        <div class="paper-selector" id="paperSelector"></div>
+    </div>
+
+    <div class="card" id="sectionCard" style="display:none">
+        <h3>📑 论文章节</h3>
+        <div class="section-info" id="sectionInfo">选择论文后，按摘要 / 引言 / 文献综述分区训练</div>
+        <div class="section-tabs" id="sectionTabs"></div>
+    </div>
+
+    <div class="card">
+        <div class="settings-row">
+            <div class="setting-group">
+                <label>难度：</label>
+                <button class="diff-btn active" data-diff="sentence" onclick="setDifficulty('sentence')">句子级</button>
+                <button class="diff-btn" data-diff="paragraph" onclick="setDifficulty('paragraph')">段落级</button>
+                <button class="diff-btn" data-diff="section" onclick="setDifficulty('section')">章节级</button>
+            </div>
+            <div class="setting-group">
+                <label class="toggle-label"><input type="checkbox" id="showLabels" checked onchange="toggleLabels()"> 显示修辞标签</label>
+            </div>
+            <div class="setting-group" style="margin-left:auto">
+                <div class="stat-item">⏱️ <span class="val blue" id="timerDisplay">00:00</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toolbar">
+        <button class="btn btn-check" onclick="checkOrder()">✅ 检查</button>
+        <button class="btn btn-undo" onclick="undoLast()">↩️ 撤销</button>
+        <button class="btn btn-reset" onclick="resetOrder()">🔄 重来</button>
+        <button class="btn btn-hint" onclick="showHint()">💡 提示</button>
+        <button class="btn btn-original" onclick="showOriginal()">📖 原文</button>
+        <button class="btn btn-report" onclick="showReport()">📊 分析报告</button>
+    </div>
+
+    <div class="card" style="padding:12px 16px">
+        <div class="stats-bar">
+            <div class="stat-item">正确率：<span class="val green" id="scoreDisplay">--</span></div>
+            <div class="stat-item" id="attemptsDisplay">尝试：0</div>
+            <div class="stat-item" id="bestDisplay">最佳：--</div>
+        </div>
+    </div>
+
+    <div class="result-banner" id="resultBanner">
+        <h3 id="resultTitle"></h3>
+        <p id="resultText"></p>
+    </div>
+
+    <div class="columns">
+        <div class="column" id="leftColumn">
+            <div class="column-header">
+                <h3>🔀 待选</h3>
+                <span class="count-badge" id="leftCount">0</span>
+            </div>
+            <div class="sentence-list" id="leftList"></div>
+        </div>
+        <div class="column" id="rightColumn">
+            <div class="column-header">
+                <h3>📝 你的排序</h3>
+                <span class="count-badge" id="rightCount">0</span>
+            </div>
+            <div class="sentence-list" id="rightList">
+                <div class="empty-hint">👈 点击左侧项目<br>按正确顺序添加到这里</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="originalModal">
+    <div class="modal-box">
+        <h3>📖 原始顺序</h3>
+        <div id="originalContent"></div>
+        <button class="modal-close" onclick="closeModal('originalModal')">关闭</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="reportModal">
+    <div class="modal-box" id="reportContent"></div>
+</div>
+
+<div class="modal-overlay" id="uploadModal">
+    <div class="modal-box">
+        <h3>📤 添加论文</h3>
+        <div class="tab-row">
+            <button class="tab-btn active" onclick="switchUploadTab('file')">上传 PDF</button>
+            <button class="tab-btn" onclick="switchUploadTab('paste')">粘贴文本</button>
+        </div>
+        <div id="uploadTabFile">
+            <div class="upload-area" id="uploadArea">
+                <p>📁 拖拽 PDF 文件到此处，或点击选择</p>
+                <p class="sub">系统将自动识别并提取 摘要 / 引言 / 文献综述 三个部分</p>
+                <input type="file" id="fileInput" accept=".pdf" style="display:none">
+            </div>
+            <div id="uploadProgress" style="display:none;margin-top:12px;color:var(--text2);font-size:13px"></div>
+        </div>
+        <div id="uploadTabPaste" style="display:none">
+            <textarea class="paste-area" id="pasteArea" placeholder="将论文文本粘贴到这里...&#10;&#10;系统将自动识别摘要、引言、文献综述等部分&#10;也可用 [ABSTRACT] [INTRODUCTION] [LITERATURE] 标记各部分"></textarea>
+            <div style="margin-top:12px;display:flex;gap:8px">
+                <input type="text" id="pasteTitle" placeholder="论文标题" style="flex:1;padding:8px 12px;border-radius:6px;background:rgba(255,255,255,0.05);border:1px solid rgba(139,92,246,0.2);color:#cbd5e1;font-size:13px">
+                <button class="btn btn-check" onclick="processPaste()">确认添加</button>
+            </div>
+        </div>
+        <button class="modal-close" onclick="closeModal('uploadModal')">关闭</button>
+    </div>
+</div>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+const LABELS={
+    problem:{icon:'❓',name:'问题提出',en:'Problem',color:'#ef4444',bg:'rgba(239,68,68,0.15)'},
+    literature:{icon:'📚',name:'文献回顾',en:'Literature',color:'#3b82f6',bg:'rgba(59,130,246,0.15)'},
+    gap:{icon:'🔍',name:'研究缺口',en:'Gap',color:'#f59e0b',bg:'rgba(245,158,11,0.15)'},
+    objective:{icon:'🎯',name:'研究目标',en:'Objective',color:'#10b981',bg:'rgba(16,185,129,0.15)'},
+    method:{icon:'🔬',name:'方法概述',en:'Method',color:'#8b5cf6',bg:'rgba(139,92,246,0.15)'},
+    transition:{icon:'🔗',name:'逻辑过渡',en:'Transition',color:'#6366f1',bg:'rgba(99,102,241,0.15)'}
+};
+
+const SECTION_META={
+    abstract:{icon:'📋',name:'摘要',en:'Abstract',desc:'论文核心贡献的凝练概述'},
+    introduction:{icon:'🎯',name:'引言',en:'Introduction',desc:'问题提出→文献回顾→研究缺口→研究目标→方法概述'},
+    literature:{icon:'📚',name:'文献综述',en:'Literature Review',desc:'系统梳理前人研究，定位本文贡献'}
+};
+
+const builtInPapers=[
+{id:'lusk2026',title:'Similarity and Substitution: Using Pile Sorting Methods to Explore Economic Behavior',authors:'Lusk, Caputo & Ahles',journal:'J. Agr. & App. Econ. Assoc., 2026',
+sections:{
+    abstract:{
+        sentences:[
+"Despite the common intuition that similar products are stronger demand substitutes, this study shows a more nuanced relationship between perceived similarity and utility substitution.",
+"Using pile sorting, a method where items are sorted into groups according to their similarity, we conduct large-scale consumer surveys on purchasing 21 foods for at-home and away-from-home consumption.",
+"We find perceived similarities differ across settings: in grocery contexts, foods perceived as more similar tend to be utility complements, whereas in restaurants, more similar foods tend to be utility substitutes.",
+"Our findings provide a rich characterization of consumer food preferences that can aid marketing and strategy decision-making."
+        ],
+        labels:['problem','method','objective','objective'],
+        paragraphs:[[0,1],[2,3]],
+        sections:[{name:'问题与方法',sents:[0,1]},{name:'发现与贡献',sents:[2,3]}]
+    },
+    introduction:{
+        sentences:[
+"Despite economists' long interest in conceptualizing and empirically estimating demand relationships between goods (Hicks, 1939; Samuelson, 1974; Walker, 1982), there is surprisingly little empirical evidence for what causes two goods to be stronger or weaker demand substitutes.",
+"Economists typically point to the shapes of indifference curves, budget constraints, or signs of elasticities to explain the degree of substitutability between goods, but this just pushes the question back further: why are some indifference curves more convex than others?",
+"One response might be de gustibus non est disputandum — that is, \"there is no disputing about tastes\" (Stigler & Becker, 1977).",
+"However, economic textbooks and articles routinely make conjectures about the causes of substitutability, and a commonly asserted culprit is the degree of similarity between goods in satisfying a given need (e.g., Nicholson, 1995; Samuelson, 1974).",
+"Understanding causes of substitutability is important in marketing and business strategy.",
+"One of Porter's five competitive forces in understanding and setting business strategy is the \"threat of substitutes\" (Porter, 2008).",
+"The identification of competitors, both for business strategy and for analysis of market power and competitiveness, often hinges on understanding the extent to which firms offer similar products.",
+"It is typically thought that firms have greater profit opportunities when they introduce products in spaces with fewer substitutes, advertise their products as different, and offer unique characteristics relative to competitors.",
+"In discussing business strategy, Besanko et al. (2018), indicates products tend to be substitutes when \"They have the same or similar product performance characteristic\" and \"have the same or similar occasions for use.\"",
+"A plausible hypothesis is that perceptions of similarity drive degree of substitutability; however, there is scant empirical evidence for it.",
+"The main goal of this study is to investigate the potential relationship between perceptions of product similarity and the degree of utility substitutability between products, and we explore the relationship between these two conceptually different but potentially related concepts.",
+"Understanding whether and to what extent similarity explains substitutability can help in the marketing and positioning of goods.",
+"For example, do consumers perceive new PBMAs as more similar to beef or broccoli?",
+"Beyond new product introductions, perceived similarity/dissimilarity estimates could help define demand structures.",
+"For example, a large literature aims to identify which products are separable from each other in demand systems modeling (e.g., Capps & Love, 2002; Eales & Unnevehr, 1988; Goldman & Uzawa, 1964; Moschini et al., 1994), and similarity/dissimilarity estimates might inform groups that emerge from two-stage budgeting.",
+"To investigate these issues, we implement an online experiment with 2010 U.S.-based consumers, where participants complete two experimental tasks: a basket-based choice experiment (BBCE) task to identify preferences and utility substitutability and a pile sorting task to measure perceived similarity of 21 food items in both Food at Home (FAH) and Food away from Home (FAFH) settings.",
+"BBCEs and pile sorting methods are similar but ask distinctly different questions.",
+"BBCEs asks, \"what do consumers want to buy, and how do purchases change as prices change?\"",
+"Pile sorting asks, \"what products do consumers perceive as most similar or dissimilar?\"",
+"The next section provides more background for these two methods, recognizing that pile sorting methods, while common in other social sciences, have scarcely been used in economics."
+        ],
+        labels:['problem','literature','literature','literature','problem','literature','literature','literature','literature','gap','objective','objective','objective','objective','literature','method','method','method','method','transition'],
+        paragraphs:[[0,1,2,3],[4,5,6,7,8,9],[10,11,12,13,14],[15,16,17,18,19]],
+        sections:[{name:'问题与文献',sents:[0,1,2,3]},{name:'现实意义与缺口',sents:[4,5,6,7,8,9]},{name:'研究目标',sents:[10,11,12,13,14]},{name:'方法概述',sents:[15,16,17,18,19]}]
+    },
+    literature:{
+        sentences:[
+"We provide a brief background on the two methods used in this study.",
+"First, we focus on recent methodological contributions of using BBCEs.",
+"Building on Ben-Akiva and Gershenfeld (1998) and the conditional choice framework of Russell and Petersen (2000), Kwak et al. (2015) extended basket-based modeling to within-category grocery assortment choice, arguing that multivariate logit (MVL) is well-suited to grocery settings.",
+"Caputo and Lusk (2022) extend this framework to the food demand context, replacing scanner data with an experimental design that exogenously varies prices across 21 cross-category food items, eliminating price endogeneity concerns while enabling estimation of own-and cross-price elasticities across a realistic food choice set specifically designed to evaluate food policy questions.",
+"Unlike conventional discrete choice experiments, BBCEs allow respondents to choose multiple items, in \"baskets,\" more closely mirroring a typical grocery shopping experience.",
+"This enables measurement of complementarity patterns when purchasing food (e.g., a meal of fries and a beef burger) and substitution effects (e.g., choosing between fresh and frozen fruits) across disaggregate products and no price endogeneity.",
+"A growing body of work has used the BBCE to estimate food demand and product substitutability (Caputo et al., 2025; Farina et al., 2024; Kilders et al., 2024; Neill & Britton, 2024; Neill & Lahne, 2022; Staples et al., 2026).",
+"To measure consumer perceptions of similarity, we implement a pile sorting task.",
+"Pile sorting has been in use for over 50 years (e.g., Burton & Romney, 1975; Killworth & Bernard, 1974; Rosenberg et al., 1968).",
+"The method is often used in small-scale qualitative studies, including in anthropology (e.g., Bernard, 1994), marketing (e.g., Blanchard et al., 2017), consumer spending (Fei et al., 2025), medicine and public health (e.g., Bourey et al., 2012; Yeh et al., 2014), food attributes (Muñoz et al., 2023), nutrition and dietetics (Cerato et al., 2012), and psychology (Hosoya et al., 2017).",
+"While pile sorting has been used to study perceptions of food similarity in small-scale studies (e.g., de Morais Sato et al., 2019; Ross & Murphy, 1999), we are not aware of its use in the economics literature.",
+"In a pile sorting task, participants sort cards representing specific items (e.g., product, brand) into \"piles\" where each card is related by some criteria.",
+"Piles are either determined entirely by participants (open sort) or specified with labels by the researcher (closed sort) (Blanchard et al., 2017).",
+"Responses are used to identify the structure of cognitive relationships between items using data analytic methods such as cluster analysis and multidimensional scaling.",
+"Prior work shows pile sorting performs well in online environments and is robust to common design choices.",
+"Blanchard and Banerji (2016) systematically investigates the effects of seven design choices, including pretask tutorials, number of items compared, images versus text, closed sort based on similarity versus dissimilarity, and item mutual exclusivity to a pile.",
+"They find respondents can easily understand pile sorting tasks in online environments and sort large numbers of items (up to 60).",
+"Additionally, many design choices (e.g., rating by similarity or dissimilarity and the use of images) have little effect on the resulting similarity patterns."
+        ],
+        labels:['transition','literature','literature','literature','literature','literature','literature','method','literature','literature','gap','method','method','literature','literature','literature','literature','literature'],
+        paragraphs:[[0,1,2,3,4,5,6],[7,8,9,10,11,12,13],[14,15,16,17]],
+        sections:[{name:'BBCE方法回顾',sents:[0,1,2,3,4,5,6]},{name:'Pile Sorting方法回顾',sents:[7,8,9,10,11,12,13]},{name:'设计稳健性',sents:[14,15,16,17]}]
+    }
+}}
+];
+
+let papers=[...builtInPapers];
+let currentPaperId='lusk2026';
+let currentSection='introduction';
+let difficulty='sentence';
+let leftItems=[];
+let rightItems=[];
+let attempts=0;
+let timerInterval=null;
+let timerSeconds=0;
+let timerRunning=false;
+let showLabelsFlag=true;
+
+function getCurrentPaper(){return papers.find(p=>p.id===currentPaperId)}
+function getCurrentSectionData(){const p=getCurrentPaper();return p&&p.sections?p.sections[currentSection]:null}
+
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function labelTag(key){const l=LABELS[key];if(!l)return'';return `<span class="label-tag" style="background:${l.bg};color:${l.color}">${l.icon} ${l.name}</span>`}
+function formatTime(s){const m=Math.floor(s/60);const sec=s%60;return String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0')}
+
+function renderPaperSelector(){
+    const el=document.getElementById('paperSelector');
+    el.innerHTML='';
+    papers.forEach(p=>{
+        const chip=document.createElement('div');
+        chip.className='paper-chip'+(p.id===currentPaperId?' active':'');
+        chip.textContent=p.title.length>35?p.title.substring(0,35)+'…':p.title;
+        chip.title=p.title;
+        chip.onclick=()=>selectPaper(p.id);
+        el.appendChild(chip);
+    });
+    const upBtn=document.createElement('div');
+    upBtn.className='upload-btn';
+    upBtn.textContent='＋ 上传论文';
+    upBtn.onclick=()=>openModal('uploadModal');
+    el.appendChild(upBtn);
+}
+
+function renderSectionTabs(){
+    const paper=getCurrentPaper();
+    const card=document.getElementById('sectionCard');
+    const tabs=document.getElementById('sectionTabs');
+    const info=document.getElementById('sectionInfo');
+    if(!paper||!paper.sections){card.style.display='none';return}
+    card.style.display='block';
+    tabs.innerHTML='';
+    const secKeys=Object.keys(paper.sections);
+    secKeys.forEach(key=>{
+        const meta=SECTION_META[key]||{icon:'📄',name:key,en:key};
+        const secData=paper.sections[key];
+        const tab=document.createElement('div');
+        tab.className='section-tab'+(key===currentSection?' active':'');
+        tab.innerHTML=`${meta.icon} ${meta.name} / ${meta.en} <span class="sec-count">${secData.sentences.length}句</span>`;
+        tab.onclick=()=>selectSection(key);
+        tabs.appendChild(tab);
+    });
+    const meta=SECTION_META[currentSection]||{desc:''};
+    info.innerHTML=`<strong>${meta.name||currentSection}</strong>：${meta.desc||''}`;
+}
+
+function selectPaper(id){currentPaperId=id;const p=getCurrentPaper();if(p&&p.sections){const keys=Object.keys(p.sections);if(!p.sections[currentSection])currentSection=keys[0]}renderPaperSelector();renderSectionTabs();resetOrder()}
+function selectSection(key){currentSection=key;renderSectionTabs();resetOrder()}
+function setDifficulty(d){difficulty=d;document.querySelectorAll('.diff-btn').forEach(b=>b.classList.toggle('active',b.dataset.diff===d));resetOrder()}
+function toggleLabels(){showLabelsFlag=document.getElementById('showLabels').checked;renderLeft();renderRight()}
+
+function getItems(){
+    const sec=getCurrentSectionData();
+    if(!sec)return[];
+    if(difficulty==='sentence')return sec.sentences.map((s,i)=>({type:'sentence',origIndex:i,display:s,label:sec.labels?sec.labels[i]:null}));
+    if(difficulty==='paragraph')return sec.paragraphs.map((pgrp,i)=>({type:'paragraph',origIndex:i,display:pgrp.map(si=>sec.sentences[si]).join(' '),label:getParagraphLabel(sec,pgrp),sentIndices:pgrp}));
+    return sec.sections.map((s,i)=>({type:'section',origIndex:i,display:s.sents.map(si=>sec.sentences[si]).join(' '),label:s.name,sentIndices:s.sents}));
+}
+
+function getParagraphLabel(sec,sentIndices){
+    if(!sec.labels)return null;
+    const lbls=sentIndices.map(i=>sec.labels[i]);
+    const counts={};lbls.forEach(l=>{counts[l]=(counts[l]||0)+1});
+    return Object.entries(counts).sort((a,b)=>b[1]-a[1])[0][0];
+}
+
+function init(){
+    const items=getItems();
+    const indices=items.map((_,i)=>i);
+    leftItems=shuffle(indices);
+    rightItems=[];
+    renderLeft();renderRight();
+    document.getElementById('scoreDisplay').textContent='--';
+    document.getElementById('resultBanner').classList.remove('show');
+    stopTimer();timerSeconds=0;updateTimerDisplay();
+}
+
+function renderLeft(){
+    const list=document.getElementById('leftList');const items=getItems();
+    list.innerHTML='';
+    leftItems.forEach(idx=>{const item=items[idx];const el=createItemEl(item,idx,false);el.addEventListener('click',()=>moveToRight(idx));list.appendChild(el)});
+    document.getElementById('leftCount').textContent=leftItems.length;
+}
+
+function renderRight(animIdx){
+    const list=document.getElementById('rightList');const items=getItems();
+    list.innerHTML='';
+    if(rightItems.length===0){list.innerHTML='<div class="empty-hint">👈 点击左侧项目<br>按正确顺序添加到这里</div>'}
+    else{rightItems.forEach((idx,pos)=>{const item=items[idx];const el=createItemEl(item,idx,true,pos);if(animIdx===idx)el.classList.add('move-anim');el.addEventListener('click',()=>moveToLeft(idx));list.appendChild(el)})}
+    const countEl=document.getElementById('rightCount');
+    countEl.textContent=rightItems.length+'/'+items.length;
+    countEl.classList.toggle('done',rightItems.length===items.length);
+}
+
+function createItemEl(item,idx,isRight,pos){
+    const el=document.createElement('div');
+    el.className=item.type==='paragraph'?'paragraph-card':item.type==='section'?'section-card':'sentence-item';
+    el.dataset.origIndex=idx;
+    if(item.type==='sentence'){
+        let lh=showLabelsFlag&&item.label?labelTag(item.label):'';
+        el.innerHTML=`<div class="order-num">${isRight?pos+1:''}</div>${lh}<div class="text">${item.display}</div><span class="arrow-icon">${isRight?'◀':'▶'}</span>`;
+    }else if(item.type==='paragraph'){
+        let lh=showLabelsFlag&&item.label?`<span class="p-label" style="background:${LABELS[item.label]?LABELS[item.label].bg:'rgba(255,255,255,0.1)'};color:${LABELS[item.label]?LABELS[item.label].color:'#94a3b8'}">${LABELS[item.label]?LABELS[item.label].icon+' '+LABELS[item.label].name:''}</span>`:'';
+        el.innerHTML=`<div class="p-header"><div class="p-num">${isRight?pos+1:''}</div>${lh}<span class="arrow-icon" style="margin-left:auto">${isRight?'◀':'▶'}</span></div><div class="p-text">${item.display}</div>`;
+    }else{
+        let lh=showLabelsFlag?`<span class="s-label" style="background:rgba(139,92,246,0.15);color:#c4b5fd">${item.label}</span>`:'';
+        el.innerHTML=`<div class="s-header"><div class="s-num">${isRight?pos+1:''}</div><div class="s-name">${item.label}</div>${lh}<span class="arrow-icon" style="margin-left:auto">${isRight?'◀':'▶'}</span></div><div class="s-text">${item.display}</div>`;
+    }
+    return el;
+}
+
+function moveToRight(idx){const i=leftItems.indexOf(idx);if(i===-1)return;leftItems.splice(i,1);rightItems.push(idx);if(!timerRunning)startTimer();renderLeft();renderRight(idx);document.getElementById('rightList').lastElementChild.scrollIntoView({behavior:'smooth',block:'nearest'})}
+function moveToLeft(idx){const i=rightItems.indexOf(idx);if(i===-1)return;rightItems.splice(i,1);leftItems.push(idx);renderLeft();renderRight()}
+function undoLast(){if(rightItems.length===0)return;const last=rightItems.pop();leftItems.push(last);renderLeft();renderRight()}
+
+function checkOrder(){
+    if(rightItems.length===0)return;
+    const items=getItems();attempts++;
+    document.getElementById('attemptsDisplay').textContent='尝试：'+attempts;
+    stopTimer();let correct=0;
+    const rightEls=document.querySelectorAll('#rightList .sentence-item, #rightList .paragraph-card, #rightList .section-card');
+    rightEls.forEach((el,pos)=>{el.classList.remove('correct','wrong','hint-highlight');if(rightItems[pos]===pos){el.classList.add('correct');correct++}else el.classList.add('wrong')});
+    const pct=Math.round((correct/items.length)*100);
+    document.getElementById('scoreDisplay').textContent=pct+'%';
+    saveHistory(pct,timerSeconds);updateBest();
+    const banner=document.getElementById('resultBanner');const title=document.getElementById('resultTitle');const text=document.getElementById('resultText');
+    banner.classList.remove('perfect','partial');
+    if(correct===items.length){banner.classList.add('perfect');title.textContent='🎉 完美还原！';title.style.color='var(--green)';text.textContent=`用时 ${formatTime(timerSeconds)}，尝试 ${attempts} 次。`}
+    else{banner.classList.add('partial');title.textContent=`正确 ${correct}/${items.length}`;title.style.color='var(--amber)';text.textContent='绿色=位置正确，红色=位置错误。点击右侧项目可退回重排。'}
+    banner.classList.add('show');
+}
+
+function resetOrder(){attempts=0;document.getElementById('attemptsDisplay').textContent='尝试：0';init()}
+
+function showHint(){
+    const nextPos=rightItems.length;const items=getItems();if(nextPos>=items.length)return;
+    const leftEls=document.querySelectorAll('#leftList .sentence-item, #leftList .paragraph-card, #leftList .section-card');
+    leftEls.forEach(el=>el.classList.remove('hint-highlight'));
+    leftEls.forEach(el=>{if(parseInt(el.dataset.origIndex)===nextPos){el.classList.add('hint-highlight');el.scrollIntoView({behavior:'smooth',block:'center'})}});
+}
+
+function showOriginal(){
+    const items=getItems();const content=document.getElementById('originalContent');
+    if(difficulty==='sentence')content.innerHTML=items.map((it,i)=>`<div class="orig-item"><span class="orig-num">${i+1}.</span>${showLabelsFlag&&it.label?`<span class="orig-label" style="background:${LABELS[it.label]?LABELS[it.label].bg:'rgba(255,255,255,0.1)'};color:${LABELS[it.label]?LABELS[it.label].color:'#94a3b8'}">${LABELS[it.label]?LABELS[it.label].icon+' '+LABELS[it.label].name:''}</span>`:''}<span>${it.display}</span></div>`).join('');
+    else if(difficulty==='paragraph')content.innerHTML=items.map((it,i)=>`<div class="orig-item"><span class="orig-num">P${i+1}</span>${showLabelsFlag&&it.label?`<span class="orig-label" style="background:${LABELS[it.label]?LABELS[it.label].bg:'rgba(255,255,255,0.1)'};color:${LABELS[it.label]?LABELS[it.label].color:'#94a3b8'}">${LABELS[it.label]?LABELS[it.label].icon+' '+LABELS[it.label].name:''}</span>`:''}<span>${it.display}</span></div>`).join('');
+    else content.innerHTML=items.map((it,i)=>`<div class="orig-item"><span class="orig-num">S${i+1}</span><span style="color:#c4b5fd;font-weight:600">${it.label}</span><span>${it.display.substring(0,200)}…</span></div>`).join('');
+    openModal('originalModal');
+}
+
+function startTimer(){timerRunning=true;timerSeconds=0;timerInterval=setInterval(()=>{timerSeconds++;updateTimerDisplay()},1000)}
+function stopTimer(){timerRunning=false;if(timerInterval){clearInterval(timerInterval);timerInterval=null}}
+function updateTimerDisplay(){document.getElementById('timerDisplay').textContent=formatTime(timerSeconds)}
+
+function saveHistory(pct,time){const key='awt_history';const hist=JSON.parse(localStorage.getItem(key)||'[]');hist.push({paper:currentPaperId,section:currentSection,diff:difficulty,pct,time,date:new Date().toISOString()});if(hist.length>50)hist.splice(0,hist.length-50);localStorage.setItem(key,JSON.stringify(hist))}
+function getHistory(){return JSON.parse(localStorage.getItem('awt_history')||'[]')}
+function updateBest(){const hist=getHistory().filter(h=>h.paper===currentPaperId&&h.section===currentSection&&h.diff===difficulty&&h.pct===100);if(hist.length>0){document.getElementById('bestDisplay').textContent='最佳：'+formatTime(Math.min(...hist.map(h=>h.time)))}else{document.getElementById('bestDisplay').textContent='最佳：--'}}
+
+function showReport(){
+    const paper=getCurrentPaper();const sec=getCurrentSectionData();const items=getItems();
+    const hist=getHistory().filter(h=>h.paper===currentPaperId&&h.section===currentSection);
+    const totalAttempts=hist.length;const perfectCount=hist.filter(h=>h.pct===100).length;
+    const avgPct=totalAttempts>0?Math.round(hist.reduce((s,h)=>s+h.pct,0)/totalAttempts):0;
+    let labelAcc={};
+    if(difficulty==='sentence'&&sec.labels&&rightItems.length>0){
+        Object.keys(LABELS).forEach(k=>{labelAcc[k]={correct:0,total:0}});
+        rightItems.forEach((origIdx,pos)=>{const lbl=sec.labels[origIdx];if(!labelAcc[lbl])labelAcc[lbl]={correct:0,total:0};labelAcc[lbl].total++;if(origIdx===pos)labelAcc[lbl].correct++});
+    }
+    let userPattern=[],correctPattern=[];
+    if(difficulty==='sentence'&&sec.labels){userPattern=rightItems.map(idx=>sec.labels[idx]);correctPattern=sec.labels}
+    let html=`<h3>📊 逻辑分析报告</h3>`;
+    const secMeta=SECTION_META[currentSection]||{};
+    html+=`<div class="report-section"><h4>总体表现 — ${secMeta.name||currentSection}</h4><div class="report-grid">
+        <div class="report-metric"><div class="rm-val green">${avgPct}%</div><div class="rm-label">平均正确率</div></div>
+        <div class="report-metric"><div class="rm-val blue">${totalAttempts}</div><div class="rm-label">总练习次数</div></div>
+        <div class="report-metric"><div class="rm-val amber">${perfectCount}</div><div class="rm-label">完美还原次数</div></div>
+        <div class="report-metric"><div class="rm-val" style="color:#c4b5fd">${formatTime(timerSeconds)}</div><div class="rm-label">本次用时</div></div>
+    </div></div>`;
+    if(difficulty==='sentence'&&sec.labels&&rightItems.length>0){
+        html+=`<div class="report-section"><h4>修辞类别准确率</h4>`;
+        Object.entries(labelAcc).forEach(([k,v])=>{const l=LABELS[k];if(!l||v.total===0)return;const pct=Math.round((v.correct/v.total)*100);html+=`<div class="report-bar">${l.icon} ${l.name} (${v.correct}/${v.total}) <div style="flex:1;background:rgba(255,255,255,0.05);border-radius:4px;overflow:hidden"><div class="rb-fill" style="width:${pct}%;background:${l.color}"></div></div> ${pct}%</div>`});
+        html+=`</div>`;
+    }
+    if(difficulty==='sentence'&&sec.labels&&rightItems.length>0){
+        html+=`<div class="report-section"><h4>你的排序模式 vs 标准模式</h4>`;
+        html+=`<div style="font-size:12px;color:var(--text2);margin-bottom:6px">你的顺序：</div><div class="report-pattern">`;
+        userPattern.forEach(l=>{const lb=LABELS[l];if(lb)html+=`<span class="rp-tag" style="background:${lb.bg};color:${lb.color}">${lb.icon} ${lb.name}</span>`});
+        html+=`</div><div style="font-size:12px;color:var(--text2);margin-bottom:6px">标准顺序：</div><div class="report-pattern">`;
+        correctPattern.forEach(l=>{const lb=LABELS[l];if(lb)html+=`<span class="rp-tag" style="background:${lb.bg};color:${lb.color}">${lb.icon} ${lb.name}</span>`});
+        html+=`</div></div>`;
+        let insights=[];
+        const uf=userPattern[0],cf=correctPattern[0];
+        if(uf&&cf&&uf!==cf)insights.push(`你倾向于以「${LABELS[uf]?LABELS[uf].name:uf}」开头，而标准写法通常以「${LABELS[cf]?LABELS[cf].name:cf}」开头。`);
+        const mp=userPattern.indexOf('method'),op=userPattern.indexOf('objective');
+        if(mp!==-1&&op!==-1&&mp<op)insights.push('你倾向于将方法概述放在研究目标之前，而标准写法通常先阐明目标再介绍方法。');
+        const gp=userPattern.indexOf('gap'),le=userPattern.lastIndexOf('literature');
+        if(gp!==-1&&le!==-1&&gp<le)insights.push('你将研究缺口放在了文献回顾中间，标准写法通常在文献回顾之后引出缺口。');
+        if(insights.length>0){html+=`<div class="report-section"><h4>💡 个性化建议</h4>`;insights.forEach(ins=>{html+=`<p style="font-size:13px;color:#cbd5e1;margin-bottom:8px;padding-left:12px;border-left:3px solid var(--accent)">${ins}</p>`});html+=`</div>`}
+    }
+    if(hist.length>0){
+        html+=`<div class="report-section"><h4>📈 历史记录（最近10次）</h4><table class="history-table"><tr><th>时间</th><th>难度</th><th>正确率</th><th>用时</th></tr>`;
+        hist.slice(-10).reverse().forEach(h=>{html+=`<tr><td>${new Date(h.date).toLocaleDateString()}</td><td>${h.diff==='sentence'?'句子':h.diff==='paragraph'?'段落':'章节'}</td><td>${h.pct}%</td><td>${formatTime(h.time)}</td></tr>`});
+        html+=`</table></div>`;
+    }
+    html+=`<button class="modal-close" onclick="closeModal('reportModal')">关闭</button>`;
+    document.getElementById('reportContent').innerHTML=html;openModal('reportModal');
+}
+
+function openModal(id){document.getElementById(id).classList.add('show')}
+function closeModal(id){document.getElementById(id).classList.remove('show')}
+document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('show')})});
+
+function switchUploadTab(tab){document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));event.target.classList.add('active');document.getElementById('uploadTabFile').style.display=tab==='file'?'block':'none';document.getElementById('uploadTabPaste').style.display=tab==='paste'?'block':'none'}
+
+const uploadArea=document.getElementById('uploadArea');
+const fileInput=document.getElementById('fileInput');
+uploadArea.addEventListener('click',()=>fileInput.click());
+uploadArea.addEventListener('dragover',e=>{e.preventDefault();uploadArea.classList.add('drag-over')});
+uploadArea.addEventListener('dragleave',()=>uploadArea.classList.remove('drag-over'));
+uploadArea.addEventListener('drop',e=>{e.preventDefault();uploadArea.classList.remove('drag-over');if(e.dataTransfer.files.length)handlePDF(e.dataTransfer.files[0])});
+fileInput.addEventListener('change',e=>{if(e.target.files.length)handlePDF(e.target.files[0])});
+
+async function handlePDF(file){
+    const prog=document.getElementById('uploadProgress');prog.style.display='block';prog.textContent='正在读取 PDF...';
+    try{
+        const buf=await file.arrayBuffer();const pdf=await pdfjsLib.getDocument({data:buf}).promise;
+        let fullText='';
+        for(let i=1;i<=pdf.numPages;i++){prog.textContent=`正在提取第 ${i}/${pdf.numPages} 页...`;const page=await pdf.getPage(i);const tc=await page.getTextContent();fullText+=tc.items.map(it=>it.str).join(' ')+'\n\n'}
+        prog.textContent='正在识别论文结构...';
+        const parsed=parsePaperStructure(fullText);
+        if(!parsed){prog.textContent='⚠️ 未能自动识别论文结构，请尝试粘贴文本方式';return}
+        const paperObj={id:'upload_'+Date.now(),title:file.name.replace('.pdf',''),authors:'上传论文',journal:'',sections:parsed};
+        papers.push(paperObj);currentPaperId=paperObj.id;currentSection=Object.keys(parsed)[0];
+        renderPaperSelector();renderSectionTabs();resetOrder();closeModal('uploadModal');prog.style.display='none';
+    }catch(err){prog.textContent='❌ 读取失败：'+err.message}
+}
+
+function parsePaperStructure(text){
+    const sections={};
+    const abstractMatch=text.match(/(?:abstract|summary)\s*[\n:—–-]?\s*([\s\S]{50,2000}?)(?=\n\s*(?:introduction|keywords|jel|1\s*[.|]|\bI\b\s*[.|]))/i);
+    if(abstractMatch){
+        const sents=splitSentences(abstractMatch[1].trim());
+        if(sents.length>=2){const labels=autoClassify(sents);sections.abstract={sentences:sents,labels,paragraphs:autoParagraph(sents,labels),sections:autoSections(sents,labels)}}
+    }
+    const introMatch=text.match(/(?:^|\n)\s*(?:1|[I])\s*[.|:]\s*introduction\s*[\n:—–-]?\s*([\s\S]{100,8000}?)(?=\n\s*(?:2|[II])\s*[.|]|\n\s*(?:background|literature|method|data|conceptual|theoretical|related work))/i);
+    if(introMatch){
+        const sents=splitSentences(introMatch[1].trim());
+        if(sents.length>=3){const labels=autoClassify(sents);sections.introduction={sentences:sents,labels,paragraphs:autoParagraph(sents,labels),sections:autoSections(sents,labels)}}
+    }
+    const litMatch=text.match(/(?:^|\n)\s*(?:2|[II])\s*[.|:]\s*(?:background|literature|related work|theoretical|conceptual)[^\n]*\s*[\n:—–-]?\s*([\s\S]{100,8000}?)(?=\n\s*(?:3|[III])\s*[.|]|\n\s*(?:method|data|empirical|research design|3\s))/i);
+    if(litMatch){
+        const sents=splitSentences(litMatch[1].trim());
+        if(sents.length>=3){const labels=autoClassify(sents);sections.literature={sentences:sents,labels,paragraphs:autoParagraph(sents,labels),sections:autoSections(sents,labels)}}
+    }
+    if(Object.keys(sections).length===0)return null;
+    return sections;
+}
+
+function splitSentences(text){return text.replace(/\s+/g,' ').trim().split(/(?<=[.!?])\s+(?=[A-Z])/).map(s=>s.trim()).filter(s=>s.length>15)}
+
+function autoClassify(sentences){
+    const kw={
+        problem:['despite','surprisingly','little evidence','challenge','problem','issue','important','understanding causes','why','central','fundamental'],
+        literature:['previous','prior','existing','has been','literature','studies','routinely','point to','conjectures','typically','e.g.','et al','argues','suggests','found','shown'],
+        gap:['however','scant','lack of','little is known','remains unclear','no study','gap','few studies','underexplored','understudied','less attention'],
+        objective:['this study','we investigate','we explore','goal','aim','objective','contribute','to investigate','to examine','this paper','this research'],
+        method:['we implement','we conduct','experiment','survey','sample','data','participants','method','approach','task','we use','we employ','design'],
+        transition:['next section','following','below','the remainder','organized as follows','provides more background','we begin','we first']
+    };
+    return sentences.map(s=>{
+        const sl=s.toLowerCase();let best='literature',bestScore=0;
+        Object.entries(kw).forEach(([cat,words])=>{let score=0;words.forEach(w=>{if(sl.includes(w))score++});if(score>bestScore){bestScore=score;best=cat}});
+        return best;
+    });
+}
+
+function autoParagraph(sentences,labels){
+    let paras=[];let cur=[];
+    sentences.forEach((_,i)=>{cur.push(i);if(labels[i]==='gap'||labels[i]==='objective'||labels[i]==='method'||labels[i]==='transition'||cur.length>=5){paras.push([...cur]);cur=[]}});
+    if(cur.length>0)paras.push(cur);return paras;
+}
+
+function autoSections(sentences,labels){
+    let sections=[];let cur={name:'',sents:[]};
+    sentences.forEach((_,i)=>{
+        const l=labels[i];const lName=LABELS[l]?LABELS[l].icon+' '+LABELS[l].name:l;
+        if(cur.sents.length===0){cur.name=lName;cur.sents.push(i)}
+        else if(l===labels[cur.sents[0]]){cur.sents.push(i)}
+        else{sections.push({...cur});cur={name:lName,sents:[i]}}
+    });
+    if(cur.sents.length>0)sections.push(cur);return sections;
+}
+
+function processPaste(){
+    const text=document.getElementById('pasteArea').value.trim();
+    const title=document.getElementById('pasteTitle').value.trim()||'粘贴论文';
+    if(!text){alert('请粘贴文本内容');return}
+    const sections={};
+    const hasMarkers=/\[abstract\]|\[introduction\]|\[literature\]/i.test(text);
+    if(hasMarkers){
+        ['abstract','introduction','literature'].forEach(key=>{
+            const re=new RegExp(`\\[${key}\\]\\s*([\\s\\S]+?)(?=\\[(?:abstract|introduction|literature)\\]|$)`,'i');
+            const m=text.match(re);
+            if(m&&m[1].trim()){
+                const sents=splitSentences(m[1].trim());
+                if(sents.length>=2){const labels=autoClassify(sents);sections[key]={sentences:sents,labels,paragraphs:autoParagraph(sents,labels),sections:autoSections(sents,labels)}}
+            }
+        });
+    }else{
+        const parsed=parsePaperStructure(text);
+        if(parsed)Object.assign(sections,parsed);
+        if(Object.keys(sections).length===0){
+            const sents=splitSentences(text);
+            if(sents.length>=3){const labels=autoClassify(sents);sections.introduction={sentences:sents,labels,paragraphs:autoParagraph(sents,labels),sections:autoSections(sents,labels)}}
+        }
+    }
+    if(Object.keys(sections).length===0){alert('未能提取有效内容，请确保文本包含完整句子');return}
+    const paperObj={id:'paste_'+Date.now(),title,authors:'粘贴论文',journal:'',sections};
+    papers.push(paperObj);currentPaperId=paperObj.id;currentSection=Object.keys(sections)[0];
+    renderPaperSelector();renderSectionTabs();resetOrder();closeModal('uploadModal');
+    document.getElementById('pasteArea').value='';document.getElementById('pasteTitle').value='';
+}
+
+const LABELS_ORDER=['problem','literature','gap','objective','method','transition'];
+renderPaperSelector();renderSectionTabs();updateBest();init();
+</script>
+</body>
+</html>
